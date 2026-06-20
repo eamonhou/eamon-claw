@@ -1,4 +1,4 @@
-package main
+package dbmonitor
 
 import (
 	"context"
@@ -15,11 +15,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
-	"time"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
@@ -52,11 +48,16 @@ func main() {
 
 	log.Println("💡 消费者循环已挂起，开始流式消费 Channel 数据...")
 
+	// 初始化 agent 核心引擎
+	agentEngine, curSession, reporter := initAgentEngine("")
+
+	ctx := context.Background()
+
 	// 5. 【终极核心控制循环：Engine Loop】
 	for {
 		select {
 		case payload := <-monitor.OutChannel:
-			// ⚡ 核心事件 A：通道收到慢查询数据
+			// 核心事件 A：通道收到慢查询数据
 
 			// 第一步：瞬时捕获本地 OS 的 CPU / IO 负载因子
 			factors := detector.Detect()
@@ -65,13 +66,59 @@ func main() {
 			_, _, _ = calculator.CalculateDynamicCost(payload, factors)
 
 			// TODO: 第三步，根据 calculator 返回的 cost 结果，拼装高密 Prompt 扔给大模型大脑！
-
+			planMode := false // 慢思考
+			if err := agentEngine.Run(ctx, curSession, reporter, planMode); err != nil {
+				log.Printf("[Engine] 思考失败：%v\n", err)
+			}
 		case <-sigChan:
-			// ⚡ 核心事件 B：接收到系统退出中断
+			// 核心事件 B：接收到系统退出中断
 			log.Println("👋 接收到安全退出信号，Agent 引擎平滑关闭。")
 			return
 		}
 	}
+}
+
+func initAgentEngine(promptPtr string) (*engine.AgentEngine, *history.Session, *engine.TerminalReporter) {
+	workDir, _ := os.Getwd()
+
+	// 测试 subagent
+	// workDir += "/workspace"
+
+	modelName := "gemini-3-pro-preview"
+
+	curSession := history.GlobalSessionManager.GetOrCreate("chat_01", workDir)
+
+	curSession.Append(schema.Message{
+		Role:    schema.RoleUser,
+		Content: promptPtr,
+	})
+
+	modelProvider := provider.NewGeminiOpenAIProvider(modelName)
+	trackerProvider := observer.NewCostTracker(modelProvider, modelName, curSession)
+	reporter := engine.NewTerminalReporter()
+
+	// main agent 工具注册
+	// 工具注册
+	mainToolRegistry := tools.NewRegistry()
+
+	// 注册读取文件的工具
+	mainToolRegistry.Register(tools.NewReadFileTool(workDir))
+
+	// 注册写文件的工具
+	mainToolRegistry.Register(tools.NewWriteFileTool(workDir))
+
+	// 注册执行bash的工具
+	mainToolRegistry.Register(tools.NewBashTool(workDir))
+
+	// 挂载中间件
+	// mainToolRegistry.Use(func(ctx context.Context, call schema.ToolCall) (allowed bool, rejectReason string) {
+	// todo 审核命令
+	// return true, ""
+	// })
+
+	// 运行程序
+	eng := engine.NewAgentEngine(trackerProvider, mainToolRegistry, false)
+	return eng, curSession, reporter
 }
 
 func main2() {
@@ -145,14 +192,12 @@ func main2() {
 	// 	log.Fatalf("服务器启动失败: %v", err)
 	// }
 
-	terminalReporter := engine.NewTerminalReporter()
-
 	// 计划模式开关
 	planMode := false
 
 	ctx := context.Background()
 
-	if err := eng.Run(ctx, sessionA, terminalReporter, planMode); err != nil {
+	if err := eng.Run(ctx, sessionA, reporter, planMode); err != nil {
 		log.Fatalf("引擎崩溃：%v\n", err)
 	}
 
@@ -162,84 +207,4 @@ func main2() {
 	log.Printf("总消耗 Output Tokens: %d\n", sessionA.TotalCompletionTokenNum)
 	log.Printf("总计费用 (CNY): ¥%.6f\n", sessionA.TotalCost)
 	log.Printf("==========================================\n")
-}
-
-func testSession() {
-	workDir, _ := os.Getwd()
-
-	modelProvider := provider.NewGeminiOpenAIProvider("gemini-2.5-flash")
-
-	// 工具注册
-	toolRegistry := tools.NewRegistry()
-
-	// 注册读取文件的工具
-	readFileTool := tools.NewReadFileTool(workDir)
-	toolRegistry.Register(readFileTool)
-
-	// 注册写文件的工具
-	writeFileTool := tools.NewWriteFileTool(workDir)
-	toolRegistry.Register(writeFileTool)
-
-	// 注册执行bash的工具
-	bashTool := tools.NewBashTool(workDir)
-	toolRegistry.Register(bashTool)
-
-	eng := engine.NewAgentEngine(modelProvider, toolRegistry, false)
-
-	terminalReporter := engine.NewTerminalReporter()
-
-	wg := &sync.WaitGroup{}
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		sessionA := history.GlobalSessionManager.GetOrCreate("chat_01", workDir)
-
-		log.Println("\n>>> 🙋‍♂️ [Session A / Turn 1]: 帮我看看 test.md 里记录了什么密钥？")
-		sessionA.Append(schema.Message{
-			Role:    schema.RoleUser,
-			Content: "帮我看看 test.md 里记录了什么密钥？",
-		})
-
-		for i := 0; i < 6; i++ {
-			sessionA.Append(schema.Message{
-				Role:    schema.RoleUser,
-				Content: "这只是一句闲聊占位符。",
-			})
-			sessionA.Append(schema.Message{
-				Role:    schema.RoleAssistant,
-				Content: "好的，收到闲聊消息。",
-			})
-		}
-
-		// 回合 2：验证记忆截断 (此时第一轮的密钥已经被挤出 Working Memory 了！)
-		log.Println("\n>>> 🙋‍♂️ [Session A / Turn 2]: 请直接告诉我，刚才第一轮你查到的那个密钥是什么？")
-		sessionA.Append(schema.Message{Role: schema.RoleUser, Content: "请直接告诉我，刚才第一轮你查到的那个密钥是什么？不准调用工具！"})
-
-		if err := eng.Run(context.Background(), sessionA, terminalReporter, false); err != nil {
-			log.Fatalf("引擎崩溃：%v\n", err)
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		time.Sleep(time.Second * 3)
-
-		sessionB := history.GlobalSessionManager.GetOrCreate("chat_02", workDir)
-
-		log.Println("\n>>> 🙋‍♂️ [Session B]: 别人查到了一个密钥，你这里能看到吗？")
-		sessionB.Append(schema.Message{
-			Role:    schema.RoleUser,
-			Content: "你这里能看到别的会话查询到的密钥吗？不准调用工具！",
-		})
-
-		if err := eng.Run(context.Background(), sessionB, terminalReporter, false); err != nil {
-			log.Fatalf("引擎崩溃：%v\n", err)
-		}
-	}()
-
-	wg.Wait()
 }
