@@ -18,60 +18,60 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// func main() {
+// // LA-CPM Load-Aware Physical Cost Prediction Model
+// // 环境负载感知的动态物理代价预测模型
+
+// log.Println("🚀 AI Agent 启动：全架构闭环事件控制循环就绪...")
+
+// // 1. 初始化只读分析库的连接池
+// // 替换为你本地的测试数据库配置
+// dsn := "root:rootisme@tcp(127.0.0.1:3302)/crm_data"
+// db, err := sql.Open("mysql", dsn)
+// if err != nil {
+// 	log.Fatalf("❌ 无法建立数据库连接池: %v", err)
+// }
+// defer db.Close()
+
+// // 2. 实例化 research 包下的三大硬核组件
+// monitor := research.NewSlowLogMonitor("/Users/eamon/Programme/dk_container/mysql-agent/logs/mysql-slow.log")
+// detector := research.NewLocalDetector()
+// calculator := research.NewCostCalculator(db)
+
+// // 3. 启动异步通道监听
+// if err := monitor.StartWatch(); err != nil {
+// 	log.Fatalf("❌ 慢日志监听器启动失败: %v", err)
+// }
+
+// // 4. 注册系统退出拦截信号
+// sigChan := make(chan os.Signal, 1)
+// signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+// log.Println("💡 消费者循环已挂起，开始流式消费 Channel 数据...")
+
+// // 5. 【终极核心控制循环：Engine Loop】
+// for {
+// 	select {
+// 	case payload := <-monitor.OutChannel:
+// 		// 核心事件 A：通道收到慢查询数据
+
+// 		// 第一步：瞬时捕获本地 OS 的 CPU / IO 负载因子
+// 		factors := detector.Detect()
+
+// 		// 第二步：将特征 payload 与环境因子送入计算器，联动读库算账
+// 		_, _, _, _ = calculator.CalculateDynamicCost(payload, factors)
+
+// 		// TODO: 第三步，根据 calculator 返回的 cost 结果，拼装高密 Prompt 扔给大模型大脑！
+
+// 	case <-sigChan:
+// 		// 核心事件 B：接收到系统退出中断
+// 		log.Println("👋 接收到安全退出信号，Agent 引擎平滑关闭。")
+// 		return
+// 	}
+// }
+// }
+
 func main() {
-	// // LA-CPM Load-Aware Physical Cost Prediction Model
-	// // 环境负载感知的动态物理代价预测模型
-
-	// log.Println("🚀 AI Agent 启动：全架构闭环事件控制循环就绪...")
-
-	// // 1. 初始化只读分析库的连接池
-	// // 替换为你本地的测试数据库配置
-	// dsn := "root:rootisme@tcp(127.0.0.1:3302)/crm_data"
-	// db, err := sql.Open("mysql", dsn)
-	// if err != nil {
-	// 	log.Fatalf("❌ 无法建立数据库连接池: %v", err)
-	// }
-	// defer db.Close()
-
-	// // 2. 实例化 research 包下的三大硬核组件
-	// monitor := research.NewSlowLogMonitor("/Users/eamon/Programme/dk_container/mysql-agent/logs/mysql-slow.log")
-	// detector := research.NewLocalDetector()
-	// calculator := research.NewCostCalculator(db)
-
-	// // 3. 启动异步通道监听
-	// if err := monitor.StartWatch(); err != nil {
-	// 	log.Fatalf("❌ 慢日志监听器启动失败: %v", err)
-	// }
-
-	// // 4. 注册系统退出拦截信号
-	// sigChan := make(chan os.Signal, 1)
-	// signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	// log.Println("💡 消费者循环已挂起，开始流式消费 Channel 数据...")
-
-	// // 5. 【终极核心控制循环：Engine Loop】
-	// for {
-	// 	select {
-	// 	case payload := <-monitor.OutChannel:
-	// 		// 核心事件 A：通道收到慢查询数据
-
-	// 		// 第一步：瞬时捕获本地 OS 的 CPU / IO 负载因子
-	// 		factors := detector.Detect()
-
-	// 		// 第二步：将特征 payload 与环境因子送入计算器，联动读库算账
-	// 		_, _, _, _ = calculator.CalculateDynamicCost(payload, factors)
-
-	// 		// TODO: 第三步，根据 calculator 返回的 cost 结果，拼装高密 Prompt 扔给大模型大脑！
-
-	// 	case <-sigChan:
-	// 		// 核心事件 B：接收到系统退出中断
-	// 		log.Println("👋 接收到安全退出信号，Agent 引擎平滑关闭。")
-	// 		return
-	// 	}
-	// }
-}
-
-func main2() {
 	promptPtr := flag.String("prompt", "", "要交给 Agent 执行的任务描述")
 	flag.Parse()
 	if *promptPtr == "" {
@@ -117,6 +117,9 @@ func main2() {
 
 	// 注册执行bash的工具
 	mainToolRegistry.Register(tools.NewBashTool(workDir))
+
+	// 注册执行lacpm-tool的工具
+	mainToolRegistry.Register(tools.NewLacpmTool(workDir))
 
 	// 挂载中间件
 	mainToolRegistry.Use(func(ctx context.Context, call schema.ToolCall) (allowed bool, rejectReason string) {

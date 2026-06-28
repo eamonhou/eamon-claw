@@ -1,0 +1,81 @@
+{
+	"name": "Agent.Run",
+	"start_time": "2026-06-28T18:03:42.711353+08:00",
+	"end_time": "2026-06-28T18:04:25.552721+08:00",
+	"duration": 42840,
+	"attributes": {
+		"session_id": "chat_01",
+		"work_dir": "/Users/eamon/ECNU/paper/ai_memory/project/eamon-claw"
+	},
+	"children": [
+		{
+			"name": "Turn_1",
+			"start_time": "2026-06-28T18:03:42.711634+08:00",
+			"end_time": "2026-06-28T18:04:25.55272+08:00",
+			"duration": 42840,
+			"children": [
+				{
+					"name": "LLM.Action",
+					"start_time": "2026-06-28T18:03:42.711641+08:00",
+					"end_time": "2026-06-28T18:03:51.208554+08:00",
+					"duration": 8496,
+					"children": null
+				}
+			]
+		},
+		{
+			"name": "Tool.Execute",
+			"start_time": "2026-06-28T18:03:55.037393+08:00",
+			"end_time": "2026-06-28T18:03:55.03763+08:00",
+			"duration": 0,
+			"attributes": {
+				"args": "{\"path\":\"config.md\"}",
+				"output_preview": "# 配置\n\n## lacpm-tool配置\n\n- prometheus_url:http://127.0.0.1:9090\n- db_url:root:rootisme@tcp(127...",
+				"tool_name": "read_file"
+			},
+			"children": null
+		},
+		{
+			"name": "Turn_2",
+			"start_time": "2026-06-28T18:03:55.037647+08:00",
+			"end_time": "2026-06-28T18:04:25.552708+08:00",
+			"duration": 30514,
+			"children": [
+				{
+					"name": "LLM.Action",
+					"start_time": "2026-06-28T18:03:55.037696+08:00",
+					"end_time": "2026-06-28T18:03:58.802366+08:00",
+					"duration": 3764,
+					"children": null
+				}
+			]
+		},
+		{
+			"name": "Tool.Execute",
+			"start_time": "2026-06-28T18:04:03.127523+08:00",
+			"end_time": "2026-06-28T18:04:03.196673+08:00",
+			"duration": 69,
+			"attributes": {
+				"args": "{\"prometheus_url\":\"http://127.0.0.1:9090\",\"db_url\":\"root:rootisme@tcp(127.0.0.1:3302)/crm_data\"}",
+				"output_preview": "🚀 --- LA-CPM 契约数据快照（AnalysisSnapshot）全维度闭环成功 ---\n⏱️  慢SQL物\ufffd...",
+				"tool_name": "lacpm"
+			},
+			"children": null
+		},
+		{
+			"name": "Turn_3",
+			"start_time": "2026-06-28T18:04:03.196725+08:00",
+			"end_time": "2026-06-28T18:04:25.552707+08:00",
+			"duration": 22355,
+			"children": [
+				{
+					"name": "LLM.Action",
+					"start_time": "2026-06-28T18:04:03.196818+08:00",
+					"end_time": "2026-06-28T18:04:14.698512+08:00",
+					"duration": 11501,
+					"children": null
+				}
+			]
+		}
+	]
+}
