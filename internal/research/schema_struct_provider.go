@@ -7,17 +7,21 @@ import (
 	"strings"
 )
 
-// SchemaAnalyzer 表结构物理尺寸分析器
-type SchemaAnalyzer struct {
+type SchemaStructProvider interface {
+	EstimateRowsPerPage(tableName string) int64
+}
+
+// InnodbCompactSchemaAnalyzer 表结构物理尺寸分析器
+type InnodbCompactSchemaAnalyzer struct {
 	DB *sql.DB
 }
 
-func NewSchemaAnalyzer(db *sql.DB) *SchemaAnalyzer {
-	return &SchemaAnalyzer{DB: db}
+func NewInnodbCompactSchemaAnalyzer(db *sql.DB) *InnodbCompactSchemaAnalyzer {
+	return &InnodbCompactSchemaAnalyzer{DB: db}
 }
 
 // EstimateRowsPerPage 根据表结构动态、精确地估算单物理页可以存放的记录条数
-func (s *SchemaAnalyzer) EstimateRowsPerPage(tableName string) int64 {
+func (s *InnodbCompactSchemaAnalyzer) EstimateRowsPerPage(tableName string) int64 {
 	// 默认兜底值
 	defaultRowsPerPage := int64(100)
 

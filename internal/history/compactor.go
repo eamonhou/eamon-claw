@@ -60,7 +60,9 @@ func (c *Compactor) Compact(messages []schema.Message) []schema.Message {
 			if !isInWorkingMemory {
 				// 第一道防线：远期历史。直接省略。
 				if len(message.Content) > 200 {
-					newMessage.Content = fmt.Sprintf("...（为了节省内存，较早历史的工具输出已经被系统强制清理。原始长度：%d 字节）...", len(message.Content))
+					newMessage.Content = fmt.Sprintf("...（为了节省内存，较早历史的工具输出已经被系统强制清理。原始长度：%d 字节）...",
+						len(message.Content),
+					)
 				}
 			} else {
 				// 第二道防线：短期记忆。
@@ -70,7 +72,13 @@ func (c *Compactor) Compact(messages []schema.Message) []schema.Message {
 				size := len(message.Content)
 				if size > maxKeepNum {
 					head, tail := message.Content[:500], message.Content[len(message.Content)-500:]
-					newMessage.Content = fmt.Sprintf("%s...（内容过长，中间 %d 个字符已省略）...%s", head, len(message.Content)-maxKeepNum, tail)
+
+					newMessage.Content = fmt.Sprintf(
+						"%s...（内容过长，中间 %d 个字符已省略）...%s",
+						head,
+						len(message.Content)-maxKeepNum,
+						tail,
+					)
 				}
 			}
 		} else if message.Role == schema.RoleAssistant && message.Content != "" {

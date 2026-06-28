@@ -2,3 +2,4 @@ test.*
 copy.go
 *.txt
 ./doc/*
+./old_chat_record.md

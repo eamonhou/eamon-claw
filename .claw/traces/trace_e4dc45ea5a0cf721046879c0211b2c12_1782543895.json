@@ -1,0 +1,27 @@
+{
+	"name": "Agent.Run",
+	"start_time": "2026-06-27T15:04:24.838676+08:00",
+	"end_time": "2026-06-27T15:04:55.658421+08:00",
+	"duration": 30819,
+	"attributes": {
+		"session_id": "e4dc45ea5a0cf721046879c0211b2c12",
+		"work_dir": "/Users/eamon/ECNU/paper/ai_memory/project/eamon-claw"
+	},
+	"children": [
+		{
+			"name": "Turn_1",
+			"start_time": "2026-06-27T15:04:24.840532+08:00",
+			"end_time": "2026-06-27T15:04:55.65842+08:00",
+			"duration": 30817,
+			"children": [
+				{
+					"name": "LLM.Action",
+					"start_time": "2026-06-27T15:04:24.840546+08:00",
+					"end_time": "2026-06-27T15:04:39.47053+08:00",
+					"duration": 14629,
+					"children": null
+				}
+			]
+		}
+	]
+}
