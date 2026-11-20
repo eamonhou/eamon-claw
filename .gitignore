@@ -1,0 +1,6 @@
+test.*
+copy.go
+*.txt
+.DS_Store
+.env
+.env.*

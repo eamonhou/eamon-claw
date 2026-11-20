@@ -1,0 +1,17 @@
+{
+  "model_name": "gemini-3-pro-preview",
+  "api_base_url": "https://api.relayrouter.app/v1",
+  "session_id": "chat_01",
+  "plan_mode": false,
+  "enable_thinking": false,
+  "max_turn_main": 20,
+  "max_turn_sub": 15,
+  "compact_max_char": 20000,
+  "compact_retain_last": 30,
+  "bash_timeout_sec": 30,
+  "bash_max_len": 8000,
+  "read_file_max_len": 4000,
+  "feishu_port": ":48080",
+  "feishu_encrypt_key": "",
+  "feishu_verify_token": ""
+}

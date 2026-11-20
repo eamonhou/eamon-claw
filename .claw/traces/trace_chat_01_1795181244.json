@@ -1,0 +1,27 @@
+{
+	"name": "Agent.Run",
+	"start_time": "2026-11-20T21:27:17.145375+08:00",
+	"end_time": "2026-11-20T21:27:24.701446+08:00",
+	"duration": 7556,
+	"attributes": {
+		"session_id": "chat_01",
+		"work_dir": "/Users/eamon/Programme/project/eamon-claw"
+	},
+	"children": [
+		{
+			"name": "Turn_1",
+			"start_time": "2026-11-20T21:27:17.146355+08:00",
+			"end_time": "2026-11-20T21:27:24.701445+08:00",
+			"duration": 7555,
+			"children": [
+				{
+					"name": "LLM.Action",
+					"start_time": "2026-11-20T21:27:17.146365+08:00",
+					"end_time": "2026-11-20T21:27:24.701431+08:00",
+					"duration": 7555,
+					"children": null
+				}
+			]
+		}
+	]
+}
